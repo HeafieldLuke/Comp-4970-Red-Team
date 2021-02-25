@@ -1,0 +1,24 @@
+Functional requirements: 
+-	How many people in each session?
+
+Nonfunctional requirements:
+-	Name of the room
+-	Name of the speaker
+-	What session
+-	editing/ maintenance
+-	Speaker day of phone number
+-	Time slots
+-	Max capacity
+
+Use Cases:
+
+-Login (Important)
+-Initialize data (Important
+-Fix data entry (Important)
+-View data after entry
+-Count attendants 
+-Entering venue data
+-Enter session data
+-View data after entry
+-Fix counts
+-Initialize data
