@@ -1,4 +1,5 @@
-import 'base.css'
+import './base.css'
+import { AiFillEdit, AiFillDelete } from 'react-icons/ai';
 
 const FormHeader = ({ name }) => (
     <div>

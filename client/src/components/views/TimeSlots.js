@@ -1,4 +1,4 @@
-import 'base.css'
+import './base.css'
 
 const TimeSlots = () => <h1>TimeSlots</h1>
 

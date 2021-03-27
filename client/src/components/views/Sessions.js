@@ -1,4 +1,4 @@
-import 'base.css'
+import './base.css'
 
 const Sessions = () => <h1>Sessions</h1>
 

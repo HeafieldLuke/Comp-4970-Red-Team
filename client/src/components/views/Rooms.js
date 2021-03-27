@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import './base.css'
-import { AiFillEdit, AiFillDelete } from 'react-icons/ai';
-import { EntryTable, FormHeader } from 'Shared.js'
+import { EntryTable, FormHeader } from './Shared.js'
 
 const Rooms = () => {        
     const [rooms, setRooms] = useState([
