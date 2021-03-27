@@ -1,3 +1,7 @@
+:root {
+    font-size: 1em;
+}
+
 .container {
     width: 90%;
     margin: auto;
@@ -9,6 +13,7 @@ hr {
 
 input {
     margin-right: 16px;
+    font-size: inherit
 }
 
 button {
@@ -17,6 +22,7 @@ button {
     color: white;
     border: none;
     margin-right: 8px;
+    font-size: inherit
 }
 
 .button-container {
@@ -29,13 +35,14 @@ table {
     border-collapse: collapse;
 }
 .row {
-    width: 20%;
+    width: 10%;
 }
 .initial-spacing {
     width: 5%;
 }
 .action {
     width: 5%;
+    text-align: center;
 }
 
 th {
