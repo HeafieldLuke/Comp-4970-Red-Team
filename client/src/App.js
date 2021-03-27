@@ -1,8 +1,8 @@
 import Header from './components/Header/Header'
-import Rooms from './components/Views/Rooms'
-import Speakers from './components/Views/Speakers'
-import TimeSlots from './components/Views/TimeSlots'
-import Sessions from './components/Views/Sessions'
+import Rooms from './components/views/Rooms'
+import Speakers from './components/views/Speakers'
+import TimeSlots from './components/views/TimeSlots'
+import Sessions from './components/views/Sessions'
 import './App.css';
 import {
   BrowserRouter as Router,
