@@ -5,6 +5,7 @@ namespace SWEBackend.Models
 {
     public class Venue
     {
+        public Venue() { }
         public Venue(string name)
             => Name = name;
 

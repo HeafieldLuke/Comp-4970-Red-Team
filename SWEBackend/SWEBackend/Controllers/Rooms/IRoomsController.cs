@@ -6,7 +6,7 @@ namespace SWEBackend.Controllers.Rooms
 {
     public interface IRoomsController 
     {
-        public Task<List<Room>> GetRoomsAsync(int? id);
+        public Task<List<Room>> GetRoomsAsync(int? venueId);
         public Task<Room> GetRoomAsync(int id);
         public Task<Room> CreateRoomAsync(Room room);
         public Task<Room> UpdateRoomAsync(Room room);

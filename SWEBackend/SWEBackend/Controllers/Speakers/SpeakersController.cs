@@ -8,41 +8,41 @@ using Microsoft.Extensions.Logging;
 using System;
 using Microsoft.AspNetCore.Http;
 
-namespace SWEBackend.Controllers.Rooms
+namespace SWEBackend.Controllers.Speakers
 {
-    public class RoomsController : IRoomsController
+    public class SpeakersController : ISpeakersController
     {
-        private readonly ILogger<IRoomsController> _logger;
+        private readonly ILogger<ISpeakersController> _logger;
         private readonly ApplicationDbContext _context;
 
-        public RoomsController(ILogger<IRoomsController> logger, ApplicationDbContext context)
+        public SpeakersController(ILogger<ISpeakersController> logger, ApplicationDbContext context)
             => (_logger, _context) = (logger, context);
 
-        public async Task<Room> CreateRoomAsync(Room room)
+        public async Task<Speaker> CreateSpeakerAsync(Speaker speaker)
         {
             try
             {
-                await _context.Rooms.AddAsync(room);
+                await _context.Speakers.AddAsync(speaker);
                 
                 await _context.SaveChangesAsync();
-                return room;
+                return speaker;
             }
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Error, ex.ToString());
-                return new Room();
+                return new Speaker();
             }
         }
 
-        public async Task<int> DeleteRoomAsync(int id)
+        public async Task<int> DeleteSpeakerAsync(int id)
         {
-            var room = await _context.Rooms.FirstOrDefaultAsync(f => f.Id == id);
+            var speaker = await _context.Speakers.FirstOrDefaultAsync(f => f.Id == id);
 
-            if (room != null)
+            if (speaker != null)
             {
                 try
                 {
-                    _context.Rooms.Remove(room);
+                    _context.Speakers.Remove(speaker);
                     
                     await _context.SaveChangesAsync();
                     return StatusCodes.Status200OK;
@@ -57,29 +57,25 @@ namespace SWEBackend.Controllers.Rooms
             return StatusCodes.Status404NotFound;
         }
 
-        public async Task<List<Room>> GetRoomsAsync(int? venueId)
-        {
-            if (venueId.HasValue)
-                return await _context.Rooms.Where(f => f.VenueId.HasValue).Where(f => f.VenueId == venueId).ToListAsync();
-            return await _context.Rooms.ToListAsync();
-        }
+        public async Task<List<Speaker>> GetSpeakersAsync()
+            => await _context.Speakers.ToListAsync();
 
-        public async Task<Room> GetRoomAsync(int id)
-            => await _context.Rooms.FirstOrDefaultAsync(f => f.Id == id);
+        public async Task<Speaker> GetSpeakerAsync(int id)
+            => await _context.Speakers.FirstOrDefaultAsync(f => f.Id == id);
 
-        public async Task<Room> UpdateRoomAsync(Room room)
+        public async Task<Speaker> UpdateSpeakerAsync(Speaker speaker)
         {
             try
             {
-                _context.Rooms.Update(room);
+                _context.Speakers.Update(speaker);
                 
                 await _context.SaveChangesAsync();
-                return room;
+                return speaker;
             }
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Error, ex.ToString());
-                return new Room();
+                return new Speaker();
             }
         }
     }

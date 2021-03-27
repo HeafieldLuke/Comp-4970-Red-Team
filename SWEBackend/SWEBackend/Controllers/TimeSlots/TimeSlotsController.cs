@@ -8,41 +8,41 @@ using Microsoft.Extensions.Logging;
 using System;
 using Microsoft.AspNetCore.Http;
 
-namespace SWEBackend.Controllers.Rooms
+namespace SWEBackend.Controllers.TimeSlots
 {
-    public class RoomsController : IRoomsController
+    public class TimeSlotsController : ITimeSlotsController
     {
-        private readonly ILogger<IRoomsController> _logger;
+        private readonly ILogger<ITimeSlotsController> _logger;
         private readonly ApplicationDbContext _context;
 
-        public RoomsController(ILogger<IRoomsController> logger, ApplicationDbContext context)
+        public TimeSlotsController(ILogger<ITimeSlotsController> logger, ApplicationDbContext context)
             => (_logger, _context) = (logger, context);
 
-        public async Task<Room> CreateRoomAsync(Room room)
+        public async Task<TimeSlot> CreateTimeSlotAsync(TimeSlot timeSlot)
         {
             try
             {
-                await _context.Rooms.AddAsync(room);
+                await _context.TimeSlots.AddAsync(timeSlot);
                 
                 await _context.SaveChangesAsync();
-                return room;
+                return timeSlot;
             }
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Error, ex.ToString());
-                return new Room();
+                return new TimeSlot();
             }
         }
 
-        public async Task<int> DeleteRoomAsync(int id)
+        public async Task<int> DeleteTimeSlotAsync(int id)
         {
-            var room = await _context.Rooms.FirstOrDefaultAsync(f => f.Id == id);
+            var timeSlot = await _context.TimeSlots.FirstOrDefaultAsync(f => f.Id == id);
 
-            if (room != null)
+            if (timeSlot != null)
             {
                 try
                 {
-                    _context.Rooms.Remove(room);
+                    _context.TimeSlots.Remove(timeSlot);
                     
                     await _context.SaveChangesAsync();
                     return StatusCodes.Status200OK;
@@ -57,29 +57,25 @@ namespace SWEBackend.Controllers.Rooms
             return StatusCodes.Status404NotFound;
         }
 
-        public async Task<List<Room>> GetRoomsAsync(int? venueId)
-        {
-            if (venueId.HasValue)
-                return await _context.Rooms.Where(f => f.VenueId.HasValue).Where(f => f.VenueId == venueId).ToListAsync();
-            return await _context.Rooms.ToListAsync();
-        }
+        public async Task<List<TimeSlot>> GetTimeSlotsAsync()
+            => await _context.TimeSlots.ToListAsync();
 
-        public async Task<Room> GetRoomAsync(int id)
-            => await _context.Rooms.FirstOrDefaultAsync(f => f.Id == id);
+        public async Task<TimeSlot> GetTimeSlotAsync(int id)
+            => await _context.TimeSlots.FirstOrDefaultAsync(f => f.Id == id);
 
-        public async Task<Room> UpdateRoomAsync(Room room)
+        public async Task<TimeSlot> UpdateTimeSlotAsync(TimeSlot timeSlot)
         {
             try
             {
-                _context.Rooms.Update(room);
+                _context.TimeSlots.Update(timeSlot);
                 
                 await _context.SaveChangesAsync();
-                return room;
+                return timeSlot;
             }
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Error, ex.ToString());
-                return new Room();
+                return new TimeSlot();
             }
         }
     }

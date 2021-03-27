@@ -9,6 +9,10 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using Microsoft.Extensions.Logging;
 using SWEBackend.Controllers.Rooms;
+using SWEBackend.Controllers.Sessions;
+using SWEBackend.Controllers.Speakers;
+using SWEBackend.Controllers.TimeSlots;
+using SWEBackend.Controllers.Venues;
 
 namespace SWEBackend
 {
@@ -34,6 +38,10 @@ namespace SWEBackend
             });
 
             services.AddScoped<IRoomsController, RoomsController>();
+            services.AddScoped<ISessionsController, SessionsController>();
+            services.AddScoped<ISpeakersController, SpeakersController>();
+            services.AddScoped<ITimeSlotsController, TimeSlotsController>();
+            services.AddScoped<IVenuesController, VenuesController>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

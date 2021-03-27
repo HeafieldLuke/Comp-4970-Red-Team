@@ -8,41 +8,41 @@ using Microsoft.Extensions.Logging;
 using System;
 using Microsoft.AspNetCore.Http;
 
-namespace SWEBackend.Controllers.Rooms
+namespace SWEBackend.Controllers.Venues
 {
-    public class RoomsController : IRoomsController
+    public class VenuesController : IVenuesController
     {
-        private readonly ILogger<IRoomsController> _logger;
+        private readonly ILogger<IVenuesController> _logger;
         private readonly ApplicationDbContext _context;
 
-        public RoomsController(ILogger<IRoomsController> logger, ApplicationDbContext context)
+        public VenuesController(ILogger<IVenuesController> logger, ApplicationDbContext context)
             => (_logger, _context) = (logger, context);
 
-        public async Task<Room> CreateRoomAsync(Room room)
+        public async Task<Venue> CreateVenueAsync(Venue venue)
         {
             try
             {
-                await _context.Rooms.AddAsync(room);
+                await _context.Venues.AddAsync(venue);
                 
                 await _context.SaveChangesAsync();
-                return room;
+                return venue;
             }
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Error, ex.ToString());
-                return new Room();
+                return new Venue();
             }
         }
 
-        public async Task<int> DeleteRoomAsync(int id)
+        public async Task<int> DeleteVenueAsync(int id)
         {
-            var room = await _context.Rooms.FirstOrDefaultAsync(f => f.Id == id);
+            var venue = await _context.Venues.FirstOrDefaultAsync(f => f.Id == id);
 
-            if (room != null)
+            if (venue != null)
             {
                 try
                 {
-                    _context.Rooms.Remove(room);
+                    _context.Venues.Remove(venue);
                     
                     await _context.SaveChangesAsync();
                     return StatusCodes.Status200OK;
@@ -57,29 +57,25 @@ namespace SWEBackend.Controllers.Rooms
             return StatusCodes.Status404NotFound;
         }
 
-        public async Task<List<Room>> GetRoomsAsync(int? venueId)
-        {
-            if (venueId.HasValue)
-                return await _context.Rooms.Where(f => f.VenueId.HasValue).Where(f => f.VenueId == venueId).ToListAsync();
-            return await _context.Rooms.ToListAsync();
-        }
+        public async Task<List<Venue>> GetVenuesAsync()
+            => await _context.Venues.ToListAsync();
 
-        public async Task<Room> GetRoomAsync(int id)
-            => await _context.Rooms.FirstOrDefaultAsync(f => f.Id == id);
+        public async Task<Venue> GetVenueAsync(int id)
+            => await _context.Venues.FirstOrDefaultAsync(f => f.Id == id);
 
-        public async Task<Room> UpdateRoomAsync(Room room)
+        public async Task<Venue> UpdateVenueAsync(Venue venue)
         {
             try
             {
-                _context.Rooms.Update(room);
+                _context.Venues.Update(venue);
                 
                 await _context.SaveChangesAsync();
-                return room;
+                return venue;
             }
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Error, ex.ToString());
-                return new Room();
+                return new Venue();
             }
         }
     }
