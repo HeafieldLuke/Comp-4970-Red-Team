@@ -25,9 +25,13 @@ namespace SWEBackend
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddEntityFrameworkNpgsql().AddDbContext<ApplicationDbContext>(opt =>
-                    opt.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
-
+            if (!string.IsNullOrWhiteSpace(Configuration.GetConnectionString("DefaultConnection")))
+                services.AddEntityFrameworkNpgsql().AddDbContext<ApplicationDbContext>(opt =>
+                        opt.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+            else
+                services.AddDbContext<ApplicationDbContext>(opt =>
+                        opt.UseSqlite(Configuration.GetSection("sqllitedb")?.Value ?? "Data Source=sweportal.db;"), ServiceLifetime.Transient);
+            
             services.AddControllersWithViews();
 
             services.AddSpaStaticFiles(configuration =>

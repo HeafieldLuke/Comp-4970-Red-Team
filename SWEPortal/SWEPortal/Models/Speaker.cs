@@ -15,9 +15,9 @@ namespace SWEBackend.Models
         public string PhoneNumber { get; set; }
         [EmailAddress]
         public string Email { get; set; }
-        public Guid SpeakerPhotoId { get; set; }
+        public Guid? SpeakerPhotoId { get; set; }
         [ForeignKey("SpeakerPhotoId")]
-        public SWEFile SpeakerPhoto { get; set; }
+        public SWEFile? SpeakerPhoto { get; set; }
         public List<Session> Sessions { get; set; }
     }
 }
