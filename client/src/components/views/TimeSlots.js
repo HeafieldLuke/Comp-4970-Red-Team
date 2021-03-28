@@ -52,5 +52,4 @@ const TimeSlotsForm = () => {
     )
 }
 
-
 export default TimeSlots
