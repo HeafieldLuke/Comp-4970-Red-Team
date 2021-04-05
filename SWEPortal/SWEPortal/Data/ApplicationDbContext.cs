@@ -14,6 +14,7 @@ namespace SWEBackend.Data
         public DbSet<SWEFile> SWEFiles { get; set; }
         public DbSet<TimeSlot> TimeSlots { get; set; }
         public DbSet<Venue> Venues { get; set; }
+        public DbSet<SessionCount> SessionCounts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -24,6 +25,7 @@ namespace SWEBackend.Data
             builder.Entity<SWEFile>().ToTable("SWEFile");
             builder.Entity<TimeSlot>().ToTable("TimeSlots");
             builder.Entity<Venue>().ToTable("Venues");
+            builder.Entity<SessionCount>().ToTable("SessionCounts");
         }
     }
 }
