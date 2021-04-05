@@ -16,6 +16,12 @@ input {
     font-size: inherit
 }
 
+select {
+    margin-right: 16px;
+    font-size: inherit;
+    padding: 2px;
+}
+
 button {
     background-color: #458FFF;
     padding: 10px;
