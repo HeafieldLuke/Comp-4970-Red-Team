@@ -9,6 +9,18 @@ const roomApi = apiBuilder("rooms")
 const speakerApi = apiBuilder("speakers")
 const timeSlotApi = apiBuilder("timeslots")
 
+const format = {
+    hour: 'numeric',
+    minute: 'numeric',
+}
+
+const toTime = (time) => {
+    let d = new Date(time)
+    d.setHours(d.getHours() - 4)
+
+    return d.toLocaleTimeString('en-US',format)
+}
+
 const Sessions = () => {
     const [sessions, setSessions] = useState([])
     const [rooms, setRooms] = useState([])
@@ -21,10 +33,18 @@ const Sessions = () => {
     const [sessionSpeaker, setSessionSpeaker] = useState([])
 
     const fetchInitialData = () => {
-        roomApi.getAll().then(response => setRooms(response.data))
-        speakerApi.getAll().then(response => setSpeakers(response.data))
-        timeSlotApi.getAll().then(response => setTimeSlots(response.data))
-        api.getAll().then(response => setSessions(response.data))
+        
+        const roomPromise = roomApi.getAll()
+        const speakerPromise = speakerApi.getAll()
+        const timeSlotPromise = timeSlotApi.getAll()
+        const sessionPromise = api.getAll()
+
+        Promise.all([roomPromise, speakerPromise, timeSlotPromise, sessionPromise]).then(response => {
+            setRooms(response[0].data)
+            setSpeakers(response[1].data)
+            setTimeSlots(response[2].data)
+            setSessions(response[3].data)
+        })
     }
 
     const fetchSessions = () => {
@@ -54,7 +74,7 @@ const Sessions = () => {
 
     useEffect(() => {
         fetchInitialData()
-    }, setSessions, setRooms, setSpeakers, setTimeSlots)
+    }, [])
 
     return (
         <div className="container">
@@ -80,6 +100,9 @@ const Sessions = () => {
                 fetchResource={fetchSessions}
                 deleteResource={removeSession}
                 submitCallback={editSession}
+                rooms={rooms}
+                timeSlots={timeSlots}
+                speakers={speakers}
             />
         </div>
     );
@@ -92,16 +115,16 @@ const SessionForm = ({ submit, sessionName, sessionRoom, sessionSpeaker, session
           <form>
           <input 
                 type="text" 
-                value={sessionName.name} 
+                value={sessionName} 
                 placeholder="Session"
                 onInput={inputEvent => setSessionName(inputEvent.target.value)}
             />
             <select
-                value={sessionRoom.name} 
+                value={sessionRoom} 
                 onChange={inputEvent => setSessionRoom(inputEvent.target.value)}
             >
                 <option value="">Select a Room</option>
-                {rooms.map(room => <option value={room}>{room.name}</option>)}
+                {rooms.map(room => <option value={room.id}>{room.name}</option>)}
             </select>
 
             <select
@@ -109,20 +132,20 @@ const SessionForm = ({ submit, sessionName, sessionRoom, sessionSpeaker, session
                 onChange={inputEvent => setSessionSpeaker(inputEvent.target.value)}
             >   
                 <option value="">Select a Speaker</option>
-                {speakers.map(speaker => <option value={speaker}>{speaker.name}</option>)}
+                {speakers.map(speaker => <option value={speaker.id}>{speaker.name}</option>)}
             </select> 
 
             <select
-                value={sessionTimeSlot.name} 
+                value={sessionTimeSlot.id} 
                 onChange={inputEvent => setSessionTimeSlot(inputEvent.target.value)}
             >
                 <option value="">Select a Time Slot</option>
-                {timeSlots.map(speaker => <option value={speaker}>{speaker.name}</option>)}
+                {timeSlots.map(timeSlot => <option value={timeSlot.id}>{`${toTime(timeSlot.startTime)}-${toTime(timeSlot.endTime)}`}</option>)}
             </select>
 
           </form>
           <div className="button-container">
-                <button onClick={() => submit({ name: sessionName, timeSlotId: sessionTimeSlot.id, roomId: sessionRoom.id, speakerId: sessionSpeaker.id })}>
+                <button onClick={() => submit({ name: sessionName, timeSlotId: sessionTimeSlot, roomId: sessionRoom, speakerId: sessionSpeaker })}>
              Submit
             </button>
             <button>Add another</button>
@@ -131,7 +154,7 @@ const SessionForm = ({ submit, sessionName, sessionRoom, sessionSpeaker, session
     )
 }
 
-const SessionEntryTable = ({ headers, rows, fetchResource, submitCallback, deleteResource, rooms, speakers, sessions }) => {
+const SessionEntryTable = ({ headers, rows, fetchResource, submitCallback, deleteResource, rooms, speakers, timeSlots }) => {
 
     return (
         <table>
@@ -142,29 +165,63 @@ const SessionEntryTable = ({ headers, rows, fetchResource, submitCallback, delet
                 <th className="action">Edit</th>
                 <th className="action">Delete</th>
             </tr>
-            {rows.map(row => <SessionEntryTableRow key={row.id} id={row.id} rowData={row} removeCallback={deleteResource} submitCallback={submitCallback} />)}
+            {rows.map(row => (<SessionEntryTableRow 
+                                key={row.id} 
+                                id={row.id} 
+                                rowData={row} 
+                                removeCallback={deleteResource} 
+                                submitCallback={submitCallback}
+                                rooms={rooms}
+                                speakers={speakers}
+                                timeSlots={timeSlots}
+            />
+            ))}
         </table>
      )
     
 }
 
-const SessionEntryTableRow = ({ id, rowData, removeCallback, submitCallback, rooms, speakers, sessions }) => {
+const SessionEntryTableRow = ({ id, rowData, removeCallback, submitCallback, rooms, speakers, timeSlots }) => {
     const [isEditing, setIsEditing] = useState(false)
     const [name, setName] = useState(rowData.name)
-    const [room, setRoom] = useState(rowData.roomId)
-    const [speaker, setSpeaker] = useState(rowData.speakerId)
-    const [timeSlot, setTimeSlot] = useState(rowData.timeSlotId)
+    const [room, setRoom] = useState(rooms && rooms.find(r => r.id == rowData.roomId) || {})
+    const [speaker, setSpeaker] = useState(speakers && speakers.find(s => s.id == rowData.speakerId) || {})
+    const [timeSlot, setTimeSlot] = useState(timeSlots && timeSlots.find(t => t.id == rowData.timeSlotId) || {})
 
     return isEditing ? 
         (<tr>
             <td></td>
             <td><input type="text" value={name} onInput={inputEvent => setName(inputEvent.target.value)} /></td>
-            <td><input type="text" value={room} onInput={inputEvent => setRoom(inputEvent.target.value)} /></td>
-            <td><input type="text" value={speaker} onInput={inputEvent => setSpeaker(inputEvent.target.value)} /></td>
-            <td><input type="text" value={timeSlot} onInput={inputEvent => setTimeSlot(inputEvent.target.value)} /></td>
+            <td>
+                <select
+                    value={room.id} 
+                    onChange={inputEvent => setRoom(rooms.find(r => r.id == inputEvent.target.value))}
+                >
+                    <option value="">Select a Room</option>
+                    {rooms.map(room => <option value={room.id}>{room.name}</option>)}
+                </select>
+            </td>
+            <td>
+                <select
+                    value={speaker.id} 
+                    onChange={inputEvent => setSpeaker(speakers.find(r => r.id == inputEvent.target.value))}
+                >   
+                    <option value="">Select a Speaker</option>
+                    {speakers.map(speaker => <option value={speaker.id}>{speaker.name}</option>)}
+                </select> 
+            </td>
+            <td>
+                <select
+                    value={timeSlot.id} 
+                    onChange={inputEvent => setTimeSlot(timeSlots.find(ts => ts.id === inputEvent.target.value))}
+                >
+                    <option value="">Select a Time Slot</option>
+                    {timeSlots.map(timeSlot => <option value={timeSlot.id}>{`${toTime(timeSlot.startTime)}-${toTime(timeSlot.endTime)}`}</option>)}
+                </select>
+            </td>
             <td>
                 <button onClick={() => {
-                    submitCallback({id: id, name: name})
+                    submitCallback({ id: id, name: name, timeSlotId: timeSlot.id, roomId: room.id, speakerId: speaker.id })
                     setIsEditing(false) 
                     }}
                 >Save</button>
@@ -177,7 +234,9 @@ const SessionEntryTableRow = ({ id, rowData, removeCallback, submitCallback, roo
         (<tr>
             <td></td>
             <td>{name}</td>
-            <td>{room}</td>
+            <td>{room.name}</td>
+            <td>{speaker.name}</td>
+            <td>{`${toTime(timeSlot.startTime)}-${toTime(timeSlot.endTime)}`}</td>
             <td></td>
             <td className="action"><AiFillEdit onClick={() => setIsEditing(true)}/></td>
             <td className="action"><AiFillDelete onClick={() => removeCallback(id)}/></td>

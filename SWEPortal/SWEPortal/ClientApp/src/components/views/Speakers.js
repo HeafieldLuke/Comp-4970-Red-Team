@@ -71,7 +71,7 @@ const SpeakerForm = ({ submit, setSpeakerPhoneNumber, setSpeakerName, setSpeaker
             <input 
                 type="text" 
                 value={speakerName} 
-                placeholder="Room name"
+                placeholder="Speaker name"
                 onInput={inputEvent => setSpeakerName(inputEvent.target.value)}
             />
             <input
@@ -130,7 +130,7 @@ const RoomEntryTableRow = ({ id, rowData, removeCallback, submitCallback }) => {
             <td><input type="text" value={email} onInput={inputEvent => setEmail(inputEvent.target.value)} /></td>
             <td>
                 <button onClick={() => {
-                    submitCallback({id: id, name: name, phoneNumber: phoneNumber})
+                    submitCallback({id: id, name: name, phoneNumber: phoneNumber, email: email})
                     setIsEditing(false) 
                     }}
                 >Save</button>

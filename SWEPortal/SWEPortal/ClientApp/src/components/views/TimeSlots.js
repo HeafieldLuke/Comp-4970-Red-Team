@@ -8,13 +8,26 @@ const api = apiBuilder("timeslots")
 
 const toJsonString = (d) => new Date(d).toJSON()
 
+const format = {
+    hour: 'numeric',
+    minute: 'numeric',
+}
+
+
+const toTime = (time) => {
+    let d = new Date(time)
+    d.setHours(d.getHours() - 4)
+    return (d.toLocaleTimeString('en', format))
+}
+
+const toDisplayTime = (time) => {
+    let d = new Date(time)
+    return ({ label: d.toLocaleTimeString('en', format), value: new Date(d)})
+}
+
 const getTimeRange = (interval) => {
         const ranges = [];
         const date = new Date();
-        const format = {
-            hour: 'numeric',
-            minute: 'numeric',
-        };
     
         for (let minutes = 0; minutes < 24 * 60; minutes = minutes + interval) {
             date.setHours(0);
@@ -22,7 +35,6 @@ const getTimeRange = (interval) => {
             ranges.push({ label: date.toLocaleTimeString('en', format), value: new Date(date)});
         }
     
-        console.log(ranges)
         return ranges;
 }
 
@@ -33,7 +45,7 @@ const TimeSlots = () => {
 
     const fetchTimeSlots = () => {
         api.getAll()
-            .then(response => {console.log(response.data); setTimeSlots(response.data)})
+            .then(response => setTimeSlots(response.data))
     }
 
     const submitTimeSlot = (timeSlot) => {
@@ -127,45 +139,34 @@ const TimeSlotEntryTable = ({ headers, rows, fetchResource, submitCallback, dele
 }
 
 const TimeSlotEntryTableRow = ({ id, rowData, removeCallback, submitCallback }) => {
+    const range = getTimeRange(30)
+
     const [isEditing, setIsEditing] = useState(false)
-    const [start, setStartTime] = useState(rowData.startTime)
-    const [end, setEndTime] = useState(rowData.endTime)
-
-    const format = {
-        hour: 'numeric',
-        minute: 'numeric',
-        timeZone: 'America/New_York'
-    }
-
-    const toTime = (time) => {
-        let d = new Date(time)
-        d.setHours(d.getHours() - 4)
-
-        return d.toLocaleTimeString('en-US',format)
-    }
-
+    const [start, setStart] = useState(range.find(r => r.label === toTime(rowData.startTime)))
+    const [end, setEnd] = useState(range.find(r => r.label == toTime(rowData.endTime)))
+    
     return isEditing ? 
         (<tr>
             <td></td>
             <td>
                 <select
-                    value={start.value} 
-                    onChange={inputEvent => setStartTime(inputEvent.target.value)}
+                    value={start.label} 
+                    onChange={inputEvent => setStart(range.find(r => r.label == inputEvent.target.value))}
                 >
-                    {getTimeRange(30).map(time => <option key={time.label} value={time.value}>{time.label}</option>)}
+                    {range.map(time => <option key={time.label} value={time.label}>{time.label}</option>)}
                 </select>
             </td>
             <td>
                 <select
-                    value={end.value} 
-                    onChange={inputEvent => setEndTime(inputEvent.target.value)}
+                    value={end.label} 
+                    onChange={inputEvent => setEnd(range.find(r => r.label == inputEvent.target.value))}
                 >
-                    {getTimeRange(30).map(time => <option key={time.label} value={time.value}>{time.label}</option>)}
+                    {range.map(time => <option key={time.label} value={time.label}>{time.label}</option>)}
                 </select>
             </td>
             <td>
                 <button onClick={() => {
-                    submitCallback({id: id, startTime: toJsonString(start), endTime: toJsonString(end)})
+                    submitCallback({id: id, startTime: toJsonString(start.value), endTime: toJsonString(end.value)})
                     setIsEditing(false) 
                     }}
                 >Save</button>
@@ -177,8 +178,8 @@ const TimeSlotEntryTableRow = ({ id, rowData, removeCallback, submitCallback }) 
         ) :
         (<tr>
             <td></td>
-            <td>{toTime(start)}</td>
-            <td>{toTime(end)}</td>
+            <td>{start.label}</td>
+            <td>{end.label}</td>
             <td></td>
             <td className="action"><AiFillEdit onClick={() => setIsEditing(true)}/></td>
             <td className="action"><AiFillDelete onClick={() => removeCallback(id)}/></td>

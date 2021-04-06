@@ -95,7 +95,7 @@ const RoomEntryTable = ({ headers, rows, fetchResource, submitCallback, deleteRe
         <table>
             <tr>
                 <th className="initial-spacing"></th>
-                {headers.map(headerName => <th className="row">{headerName}</th>)}
+                {headers.map(headerName => <th className="row" key={headerName}>{headerName}</th>)}
                 <th></th>
                 <th className="action">Edit</th>
                 <th className="action">Delete</th>
