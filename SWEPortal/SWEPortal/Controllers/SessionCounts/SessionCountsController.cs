@@ -6,42 +6,43 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using System;
 using Microsoft.AspNetCore.Http;
+using System.Linq;
 
-namespace SWEBackend.Controllers.TimeSlots
+namespace SWEBackend.Controllers.SessionCounts
 {
-    public class TimeSlotsController : ITimeSlotsController
+    public class SessionCountsController : ISessionCountsController
     {
-        private readonly ILogger<ITimeSlotsController> _logger;
+        private readonly ILogger<ISessionCountsController> _logger;
         private readonly ApplicationDbContext _context;
 
-        public TimeSlotsController(ILogger<ITimeSlotsController> logger, ApplicationDbContext context)
+        public SessionCountsController(ILogger<ISessionCountsController> logger, ApplicationDbContext context)
             => (_logger, _context) = (logger, context);
 
-        public async Task<TimeSlot> CreateTimeSlotAsync(TimeSlot timeSlot)
+        public async Task<SessionCount> CreateSessionCountAsync(SessionCount sessionCount)
         {
             try
             {
-                await _context.TimeSlots.AddAsync(timeSlot);
+                await _context.SessionCounts.AddAsync(sessionCount);
                 
                 await _context.SaveChangesAsync();
-                return timeSlot;
+                return sessionCount;
             }
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Error, ex.ToString());
-                return new TimeSlot();
+                return new SessionCount();
             }
         }
 
-        public async Task<int> DeleteTimeSlotAsync(Guid id)
+        public async Task<int> DeleteSessionCountAsync(Guid id)
         {
-            var timeSlot = await _context.TimeSlots.FirstOrDefaultAsync(f => f.Id == id);
+            var sessionCount = await _context.SessionCounts.FirstOrDefaultAsync(f => f.Id == id);
 
-            if (timeSlot != null)
+            if (sessionCount != null)
             {
                 try
                 {
-                    _context.TimeSlots.Remove(timeSlot);
+                    _context.SessionCounts.Remove(sessionCount);
                     
                     await _context.SaveChangesAsync();
                     return StatusCodes.Status200OK;
@@ -56,25 +57,22 @@ namespace SWEBackend.Controllers.TimeSlots
             return StatusCodes.Status404NotFound;
         }
 
-        public async Task<List<TimeSlot>> GetTimeSlotsAsync()
-            => await _context.TimeSlots.ToListAsync();
+        public async Task<List<SessionCount>> GetSessionCountsAsync(Guid id)
+            => await _context.SessionCounts.Where(f => f.SessionId == id).ToListAsync();
 
-        public async Task<TimeSlot> GetTimeSlotAsync(Guid id)
-            => await _context.TimeSlots.FirstOrDefaultAsync(f => f.Id == id);
-
-        public async Task<TimeSlot> UpdateTimeSlotAsync(TimeSlot timeSlot)
+        public async Task<SessionCount> UpdateSessionCountAsync(SessionCount sessionCount)
         {
             try
             {
-                _context.TimeSlots.Update(timeSlot);
+                _context.SessionCounts.Update(sessionCount);
                 
                 await _context.SaveChangesAsync();
-                return timeSlot;
+                return sessionCount;
             }
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Error, ex.ToString());
-                return new TimeSlot();
+                return new SessionCount();
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -19,5 +20,6 @@ namespace SWEBackend.Models
         public TimeSlot TimeSlot { get; set; }
         [ForeignKey("SpeakerId")]
         public Speaker Speaker { get; set; }
+        public List<SessionCount> SessionCounts { get; set; }
     }
 }

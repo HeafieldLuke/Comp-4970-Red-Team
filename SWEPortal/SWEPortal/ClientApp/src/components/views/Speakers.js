@@ -98,9 +98,6 @@ const SpeakerForm = ({ submit, setSpeakerPhoneNumber, setSpeakerName, setSpeaker
 }
 
 const SpeakerEntryTable = ({ headers, rows, fetchResource, submitCallback, deleteResource }) => {
-
-    
-
     return (
         <table>
             <tr>
