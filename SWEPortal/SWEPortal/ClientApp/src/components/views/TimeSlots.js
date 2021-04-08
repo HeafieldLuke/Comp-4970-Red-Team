@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import './base.css'
-import { EntryTable, FormHeader } from './Shared.js'
+import { EntryTable, ErrorMessages, FormHeader } from './Shared.js'
 import { AiFillEdit, AiFillDelete } from 'react-icons/ai';
 import apiBuilder from '../../api/api'
 
@@ -13,6 +13,33 @@ const format = {
     minute: 'numeric',
 }
 
+const validateTimeSlots = (timeSlot) => {
+    const { startTime, endTime } = timeSlot
+
+    let errors = []
+    if (Object.keys(startTime).length === 0) {
+        errors.push({ message: "Start time cannot be null"})
+    }
+
+    if (Object.keys(endTime).length === 0) {
+        errors.push({ message: "End time cannot be null"})
+    }
+    
+    if (errors.length > 0) return errors
+
+    const start = getMinutes(startTime)
+    const end = getMinutes(endTime)
+
+    if (start === end) {
+        errors.push({ message: "Start and end cannot be the same" })
+    }
+
+    if (start > end) {
+        errors.push({ message: "Start time must be before end time" })
+    }
+
+    return errors
+}
 
 const toTime = (time) => {
     let d = new Date(time)
@@ -20,9 +47,9 @@ const toTime = (time) => {
     return (d.toLocaleTimeString('en', format))
 }
 
-const toDisplayTime = (time) => {
+const getMinutes = (time) => {
     let d = new Date(time)
-    return ({ label: d.toLocaleTimeString('en', format), value: new Date(d)})
+    return d.getMinutes() + (d.getHours() * 60)
 }
 
 const getTimeRange = (interval) => {
@@ -42,6 +69,7 @@ const TimeSlots = () => {
     const [timeSlots, setTimeSlots] = useState([])
     const [startTime, setStartTime] = useState({})
     const [endTime, setEndTime] = useState({})
+    const [errors, setErrors] = useState([])
 
     const fetchTimeSlots = () => {
         api.getAll()
@@ -49,11 +77,17 @@ const TimeSlots = () => {
     }
 
     const submitTimeSlot = (timeSlot) => {
-        api.create(timeSlot).then(response => {
-            fetchTimeSlots()
-            setStartTime("")
-            setEndTime("")
-        })
+        const messages = validateTimeSlots(timeSlot)
+        setErrors(messages)
+        console.log(messages)
+        if (messages.length === 0) {
+            const stringTimes = { startTime: toJsonString(timeSlot.startTime), endTime: toJsonString(timeSlot.endTime)}
+            api.create(stringTimes).then(response => {
+                fetchTimeSlots()
+                setStartTime("")
+                setEndTime("")
+            })
+        }
     }
 
     const editTimeSlot = (timeSlots) => {
@@ -72,6 +106,7 @@ const TimeSlots = () => {
 
     return (
         <div className="container">
+            <ErrorMessages errors={errors} />
             <FormHeader name="Time Slots"/>
             <TimeSlotForm 
                 submit={(data) => submitTimeSlot(data)}
@@ -112,7 +147,7 @@ const TimeSlotForm = ({ submit, setStartTime, setEndTime, startTime, endTime }) 
             </select>
           </form>
           <div className="button-container">
-                <button onClick={() => submit({ startTime: toJsonString(startTime), endTime: toJsonString(endTime) })}>
+                <button onClick={() => submit({ startTime: startTime, endTime: endTime })}>
              Submit
             </button>
             <button>Add another</button>

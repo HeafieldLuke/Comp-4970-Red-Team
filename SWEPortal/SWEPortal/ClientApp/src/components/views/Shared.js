@@ -10,6 +10,12 @@ const FormHeader = ({ name }) => (
     </div>
 )
 
+const ErrorMessages = ({ errors }) => (
+    <div className="error-parent">
+        {errors.map(error => <div key={error.message} className="error">{error.message}</div>)}
+    </div>
+)
+
 const EntryTable = ({ headers, rows, fetchResource, submitResource, deleteResource }) => {
 
     
@@ -53,4 +59,4 @@ const EntryTableRow = ({ id, rowData, removeCallback, submitResource }) => {
     
 }
 
-export { EntryTable, FormHeader };
+export { EntryTable, FormHeader, ErrorMessages };

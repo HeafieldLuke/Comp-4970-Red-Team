@@ -62,3 +62,16 @@ td {
 table tr:nth-child(even) td {
     background-color: #C4C4C4;
 }
+
+.error-parent {
+    width: 50%
+}
+
+.error {
+    border: 1px solid;
+	margin: 10px 0px;
+	background-position: 10px center;
+    padding: 10px 0px 10px 5px;
+    background-color: #FFBABA;
+    color: #D8000C;
+}

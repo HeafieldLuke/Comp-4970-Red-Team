@@ -1,13 +1,30 @@
 import { useState, useEffect } from 'react'
 import './base.css'
-import { EntryTable, FormHeader } from './Shared.js'
+import { ErrorMessages, FormHeader } from './Shared.js'
 import { AiFillEdit, AiFillDelete } from 'react-icons/ai';
 import apiBuilder from '../../api/api'
 
 const api = apiBuilder("rooms")
 
+const validateRoom = (room) => {
+    const { name, capacity } = room
+    let errors = []
+
+    if (name === "" || name === null) {
+        errors.push({ message: "Name cannot be null" })
+    }
+
+    const isInt = /^\+?\d+$/.test(capacity);
+    if (!isInt) {
+        errors.push({ message: "Capacity must be a positive integer" })
+    }
+
+    return errors 
+}
+
 const Rooms = () => {
     const [rooms, setRooms] = useState([])
+    const [errors, setErrors] = useState([])
     const [roomName, setRoomName] = useState("")
     const [roomCapacity, setRoomCapacity] = useState("")
 
@@ -17,11 +34,15 @@ const Rooms = () => {
     }
 
     const submitRoom = (room) => {
-        api.create(room).then(response => {
-            fetchRooms()
-            setRoomName("")
-            setRoomCapacity("")
-        })
+        const result = validateRoom(room)
+        setErrors(result)
+        if (result.length == 0) {
+            api.create(room).then(response => {
+                fetchRooms()
+                setRoomName("")
+                setRoomCapacity("")
+            })
+        }
     }
 
     const editRoom = (room) => {
@@ -40,6 +61,7 @@ const Rooms = () => {
 
     return (
         <div className="container">
+            <ErrorMessages errors={errors} />
             <FormHeader name="Rooms"/>
             <RoomForm 
                 submit={(data) => submitRoom(data)}
