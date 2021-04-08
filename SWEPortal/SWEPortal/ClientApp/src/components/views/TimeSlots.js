@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import './base.css'
 import { EntryTable, FormHeader } from './Shared.js'
 import { AiFillEdit, AiFillDelete } from 'react-icons/ai';
-import apiBuilder from '../../api/rooms'
+import apiBuilder from '../../api/api'
 
 const api = apiBuilder("timeslots")
 
@@ -16,7 +16,7 @@ const format = {
 
 const toTime = (time) => {
     let d = new Date(time)
-    d.setHours(d.getHours() - 4)
+    d.setHours(d.getHours() - (d.getTimezoneOffset() / 60))
     return (d.toLocaleTimeString('en', format))
 }
 
@@ -49,7 +49,6 @@ const TimeSlots = () => {
     }
 
     const submitTimeSlot = (timeSlot) => {
-        console.log(timeSlot)
         api.create(timeSlot).then(response => {
             fetchTimeSlots()
             setStartTime("")

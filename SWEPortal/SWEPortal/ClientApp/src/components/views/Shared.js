@@ -1,7 +1,7 @@
 import './base.css'
 import { useState } from 'react'
 import { AiFillEdit, AiFillDelete } from 'react-icons/ai';
-import api from '../../api/rooms'
+import api from '../../api/api'
 
 const FormHeader = ({ name }) => (
     <div>

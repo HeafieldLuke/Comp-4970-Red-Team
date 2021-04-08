@@ -1,6 +1,6 @@
 ﻿import axios from 'axios'
 
-const baseUrl = "https://localhost:5001/api"
+const baseUrl = "/api"
 
 const apiBuilder = (resource) => {
 
@@ -13,12 +13,12 @@ const apiBuilder = (resource) => {
             return await axios.get(`${baseUrl}/${resource}/${id}`)
         },
 
-        async create(room) {
-            return await axios.post(`${baseUrl}/${resource}`, room)
+        async create(model) {
+            return await axios.post(`${baseUrl}/${resource}`, model)
         },
 
-        async update(room) {
-            return await axios.put(`${baseUrl}/${resource}`, room)
+        async update(model) {
+            return await axios.put(`${baseUrl}/${resource}`, model)
         },
 
         async delete(id) {

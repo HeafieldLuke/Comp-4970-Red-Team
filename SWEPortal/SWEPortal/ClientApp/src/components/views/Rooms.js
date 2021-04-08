@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import './base.css'
 import { EntryTable, FormHeader } from './Shared.js'
 import { AiFillEdit, AiFillDelete } from 'react-icons/ai';
-import apiBuilder from '../../api/rooms'
+import apiBuilder from '../../api/api'
 
 const api = apiBuilder("rooms")
 
