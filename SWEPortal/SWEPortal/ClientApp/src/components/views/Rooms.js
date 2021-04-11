@@ -156,7 +156,9 @@ const RoomEntryTableRow = ({ id, rowData, removeCallback, submitCallback }) => {
             <td>{capacity}</td>
             <td></td>
             <td className="action"><AiFillEdit onClick={() => setIsEditing(true)}/></td>
-            <td className="action"><AiFillDelete onClick={() => removeCallback(id)}/></td>
+            <td className="action"><AiFillDelete onClick={() => {
+                window.confirm("Are you sure you wish to delete this item?") && removeCallback(id)
+            }}/></td>
         </tr>)
 }
 

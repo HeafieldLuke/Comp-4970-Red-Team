@@ -75,3 +75,40 @@ table tr:nth-child(even) td {
     background-color: #FFBABA;
     color: #D8000C;
 }
+
+div.centered-container {
+    width: 90%;
+    margin: auto;
+    text-align: center;
+}
+select.count-select {
+    width: 50%;
+    font-size: 16px;
+    margin: 32px 0px 16px 0px;
+}
+
+.counts > input {
+    display: block;
+    margin-bottom: 8px;
+}
+
+ul.count {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+}
+
+.count > li {
+    max-width: 20%;
+    padding: 8px 4px;
+}
+
+.count > li:nth-child(even) {
+    background-color: #C4C4C4;
+}
+
+h3 {
+    margin: 0;
+    padding: 0;
+}
