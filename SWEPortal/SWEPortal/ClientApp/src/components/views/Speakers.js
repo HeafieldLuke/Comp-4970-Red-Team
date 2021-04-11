@@ -1,29 +1,57 @@
 import { useState, useEffect } from 'react'
 import './base.css'
-import { EntryTable, FormHeader } from './Shared.js'
+import { ErrorMessages, FormHeader } from './Shared.js'
 import { AiFillEdit, AiFillDelete } from 'react-icons/ai';
 import apiBuilder from '../../api/api'
 
 const api = apiBuilder('speakers')
+
+const isValidPhoneNumber = (phoneNumber) => /^\d{10}$/.test(phoneNumber)
+
+const isValidEmail = (email) => /^\S+@\S+$/.test(email)
+
+const validateSpeaker = (speaker) => {
+    let errors = []
+
+    if (speaker.name === "") {
+        errors.push({ message: "Name cannot be blank" })
+    }
+
+    if (!isValidPhoneNumber(speaker.phoneNumber)) {
+        errors.push({ message: "Phone number is invalid"})
+    }
+
+    if (!isValidEmail(speaker.email)) {
+        errors.push({ message: "Email is invalid"})
+    }
+
+    return errors
+
+}
 
 const Speakers = () => {
     const [speakers, setSpeakers] = useState([])
     const [speakerName, setSpeakerName] = useState("")
     const [speakerPhoneNumber, setSpeakerPhoneNumber] = useState("")
     const [speakerEmail, setSpeakerEmail] = useState("")
+    const [errors, setErrors] = useState([])
 
     const fetchSpeakers = () => {
         api.getAll()
             .then(response => setSpeakers(response.data))
     }
 
-    const submitSpeakers = (room) => {
-        api.create(room).then(response => {
-            fetchSpeakers()
-            setSpeakerName("")
-            setSpeakerPhoneNumber("")
-            setSpeakerEmail("")
-        })
+    const submitSpeakers = (speaker) => {
+        const messages = validateSpeaker(speaker)
+        setErrors(messages)
+        if (messages.length === 0) {
+            api.create(speaker).then(response => {
+                fetchSpeakers()
+                setSpeakerName("")
+                setSpeakerPhoneNumber("")
+                setSpeakerEmail("")
+            })
+        }
     }
 
     const editSpeaker = (room) => {
@@ -42,6 +70,7 @@ const Speakers = () => {
 
     return (
         <div className="container">
+            <ErrorMessages errors={errors} />
             <FormHeader name="Speakers"/>
             <SpeakerForm 
                 submit={(data) => submitSpeakers(data)}

@@ -18,11 +18,11 @@ const validateTimeSlots = (timeSlot) => {
 
     let errors = []
     if (Object.keys(startTime).length === 0) {
-        errors.push({ message: "Start time cannot be null"})
+        errors.push({ message: "Start time cannot be empty"})
     }
 
     if (Object.keys(endTime).length === 0) {
-        errors.push({ message: "End time cannot be null"})
+        errors.push({ message: "End time cannot be empty"})
     }
     
     if (errors.length > 0) return errors
@@ -79,7 +79,6 @@ const TimeSlots = () => {
     const submitTimeSlot = (timeSlot) => {
         const messages = validateTimeSlots(timeSlot)
         setErrors(messages)
-        console.log(messages)
         if (messages.length === 0) {
             const stringTimes = { startTime: toJsonString(timeSlot.startTime), endTime: toJsonString(timeSlot.endTime)}
             api.create(stringTimes).then(response => {
