@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import './base.css'
-import { EntryTable, FormHeader } from './Shared.js'
+import { EntryTable, ErrorMessages, FormHeader } from './Shared.js'
 import { AiFillEdit, AiFillDelete } from 'react-icons/ai';
 import apiBuilder from '../../api/api'
 
@@ -32,6 +32,30 @@ const Sessions = () => {
     const [sessionTimeSlot, setSessionTimeSlot] = useState([])
     const [sessionSpeaker, setSessionSpeaker] = useState([])
 
+    const [errors, setErrors] = useState([])
+
+    const validateSession = (session) => {
+        const messages = []
+
+        if (session.name === "") {
+            messages.push({ message: "Name cannot be empty" })
+        }
+
+        const roomConflicts = sessions.filter(s => s.timeSlotId === session.timeSlotId && s.roomId === session.roomId)
+
+        if (roomConflicts.length != 0) {
+            messages.push({ message: `Conflicting room, already booked for the selected time in session:  ${roomConflicts[0].name}`})
+        }
+
+        const speakerConflict = sessions.filter(s => s.timeSlotId === session.timeSlotId && s.speakerId === session.speakerId)
+
+        if (speakerConflict.length != 0) {
+            messages.push({ message: `Conflicting speaker, already booked for the selected time in session : ${roomConflicts[0].name}`})
+        }
+        console.log(messages)
+        return messages
+    }
+
     const fetchInitialData = () => {
         
         const roomPromise = roomApi.getAll()
@@ -52,14 +76,20 @@ const Sessions = () => {
             .then(response => setSessions(response.data))
     }
 
-    const submitSession = (room) => {
-        api.create(room).then(response => {
-            fetchSessions()
-            setSessionName("")
-            setSessionRoom({})
-            setSessionTimeSlot({})
-            setSessionSpeaker({})
-        })
+    const submitSession = (session) => {
+        const messages = validateSession(session)
+
+        setErrors(messages)
+        if (messages.length === 0) {
+            api.create(session).then(response => {
+                fetchSessions()
+                setSessionName("")
+                setSessionRoom({})
+                setSessionTimeSlot({})
+                setSessionSpeaker({})
+            })
+        }
+        
     }
 
     const editSession = (room) => {
@@ -78,6 +108,7 @@ const Sessions = () => {
 
     return (
         <div className="container">
+            <ErrorMessages errors={errors} />
             <FormHeader name="Session"/>
             <SessionForm 
                 submit={(data) => submitSession(data)}
