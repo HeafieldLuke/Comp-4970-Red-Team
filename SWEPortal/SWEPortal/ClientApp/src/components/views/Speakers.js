@@ -3,6 +3,7 @@ import './base.css'
 import { ErrorMessages, FormHeader } from './Shared.js'
 import { AiFillEdit, AiFillDelete } from 'react-icons/ai';
 import apiBuilder from '../../api/api'
+import Modal from '../Modal/Modal'
 
 const api = apiBuilder('speakers')
 
@@ -54,10 +55,18 @@ const Speakers = () => {
         }
     }
 
-    const editSpeaker = (room) => {
-        api.update(room).then(response => {
-            fetchSpeakers()
-        })
+    const editSpeaker = (speaker) => {
+        const messages = validateSpeaker(speaker)
+        setErrors(messages)
+
+        if (messages.length === 0) {
+            api.update(speaker).then(response => {
+                fetchSpeakers()
+            })
+            return true
+        }
+
+        return false
     }
 
     const removeSpeaker = (id) => {
@@ -120,7 +129,6 @@ const SpeakerForm = ({ submit, setSpeakerPhoneNumber, setSpeakerName, setSpeaker
                 <button onClick={() => submit({ name: speakerName, phoneNumber: speakerPhoneNumber, email: speakerEmail })}>
              Submit
             </button>
-            <button>Add another</button>
           </div>
         </div>
     )
@@ -147,34 +155,50 @@ const RoomEntryTableRow = ({ id, rowData, removeCallback, submitCallback }) => {
     const [name, setName] = useState(rowData.name)
     const [phoneNumber, setPhoneNumber] = useState(rowData.phoneNumber)
     const [email, setEmail] = useState(rowData.email)
+    const [isModalVisible, setIsModalVisible] = useState(false)
 
-    return isEditing ? 
-        (<tr>
+    if (isEditing) {
+        return <>
+            <Modal isVisible={isModalVisible} setVisible={() => setIsModalVisible(false)} deleteCallback={() => removeCallback(id)} />
+            <tr>
             <td></td>
             <td><input type="text" value={name} onInput={inputEvent => setName(inputEvent.target.value)} /></td>
             <td><input type="text" value={phoneNumber} onInput={inputEvent => setPhoneNumber(inputEvent.target.value)} /></td>
             <td><input type="text" value={email} onInput={inputEvent => setEmail(inputEvent.target.value)} /></td>
             <td>
                 <button onClick={() => {
-                    submitCallback({id: id, name: name, phoneNumber: phoneNumber, email: email})
-                    setIsEditing(false) 
+                    const success = submitCallback({id: id, name: name, phoneNumber: phoneNumber, email: email})
+                    if (success) {
+                        setIsEditing(false) 
+                    }
                     }}
                 >Save</button>
-                <button onClick={() => setIsEditing(false)}>Cancel</button>
+                <button onClick={() => {
+                    setName(rowData.name)
+                    setPhoneNumber(rowData.phoneNumber)
+                    setEmail(rowData.email)
+                    setIsEditing(false)}
+                }>Cancel</button>
             </td>
             <td className="action"><AiFillEdit /></td>
-            <td className="action"><AiFillDelete onClick={() => removeCallback(id)}/></td>
+            <td className="action"><AiFillDelete onClick={() => setIsModalVisible(true)}/></td>
           </tr>
-        ) :
-        (<tr>
+        </>
+    }
+
+    return (
+        <>
+        <Modal isVisible={isModalVisible} setVisible={() => setIsModalVisible(false)} deleteCallback={() => removeCallback(id)} />  
+        <tr>
             <td></td>
             <td>{name}</td>
             <td>{phoneNumber}</td>
             <td>{email}</td>
             <td></td>
             <td className="action"><AiFillEdit onClick={() => setIsEditing(true)}/></td>
-            <td className="action"><AiFillDelete onClick={() => removeCallback(id)}/></td>
-        </tr>)
+            <td className="action"><AiFillDelete onClick={() => setIsModalVisible(true)}/></td>
+        </tr>
+        </>)
 }
 
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import './base.css'
 import { ErrorMessages, FormHeader } from './Shared.js'
 import { AiFillEdit, AiFillDelete } from 'react-icons/ai';
+import Modal from '../Modal/Modal'
 import apiBuilder from '../../api/api'
 
 const api = apiBuilder("rooms")
@@ -46,13 +47,22 @@ const Rooms = () => {
     }
 
     const editRoom = (room) => {
-        api.update(room).then(response => {
-            fetchRooms()
-        })
+        const messages = validateRoom(room)
+
+        setErrors(messages)
+        if (messages.length === 0) {
+            api.update(room).then(response => {
+                fetchRooms()
+            })
+            return true;
+        }
+
+        return false;
+        
     }
 
     const removeRoom = (id) => {
-        api.delete(id).then(response => fetchRooms)
+        api.delete(id).then(response => fetchRooms())
     }
 
     useEffect(() => {
@@ -60,6 +70,7 @@ const Rooms = () => {
     })
 
     return (
+        <>
         <div className="container">
             <ErrorMessages errors={errors} />
             <FormHeader name="Rooms"/>
@@ -78,6 +89,7 @@ const Rooms = () => {
                 submitCallback={editRoom}
             />
         </div>
+        </>
     );
 }
 
@@ -103,13 +115,12 @@ const RoomForm = ({ submit, setRoomCapacity, setRoomName, roomCapacity, roomName
                 <button onClick={() => submit({ name: roomName, capacity: roomCapacity })}>
              Submit
             </button>
-            <button>Add another</button>
           </div>
         </div>
     )
 }
 
-const RoomEntryTable = ({ headers, rows, fetchResource, submitCallback, deleteResource }) => {
+const RoomEntryTable = ({ headers, rows, submitCallback, deleteResource }) => {
 
     
 
@@ -132,34 +143,44 @@ const RoomEntryTableRow = ({ id, rowData, removeCallback, submitCallback }) => {
     const [isEditing, setIsEditing] = useState(false)
     const [name, setName] = useState(rowData.name)
     const [capacity, setCapacity] = useState(rowData.capacity)
+    const [isModalVisible, setIsModalVisible] = useState(false)
 
-    return isEditing ? 
-        (<tr>
+    if (isEditing) {
+        return (
+            <>
+            <Modal isVisible={isModalVisible} setVisible={setIsModalVisible} deleteCallback={() => removeCallback(id)} />
+            <tr>
             <td></td>
             <td><input type="text" value={name} onInput={inputEvent => setName(inputEvent.target.value)} /></td>
             <td><input type="text" value={capacity} onInput={inputEvent => setCapacity(inputEvent.target.value)} /></td>
             <td>
                 <button onClick={() => {
-                    submitCallback({id: id, name: name, capacity: capacity})
-                    setIsEditing(false) 
+                    const success = submitCallback({id: id, name: name, capacity: capacity})
+                    if (success) {
+                        setIsEditing(false) 
+                    }
                     }}
                 >Save</button>
-                <button onClick={() => setIsEditing(false)}>Cancel</button>
+                <button onClick={() => {setName(rowData.name); setCapacity(rowData.capacity); setIsEditing(false)}}>Cancel</button>
             </td>
             <td className="action"><AiFillEdit /></td>
-            <td className="action"><AiFillDelete onClick={() => removeCallback(id)}/></td>
+            <td className="action"><AiFillDelete onClick={() => setIsModalVisible(true)}/></td>
           </tr>
-        ) :
-        (<tr>
+          </>)
+    }
+
+    return (
+        <>
+            <Modal isVisible={isModalVisible} setVisible={() => setIsModalVisible(false)} deleteCallback={() => removeCallback(id)} />
+            <tr>
             <td></td>
             <td>{name}</td>
             <td>{capacity}</td>
             <td></td>
             <td className="action"><AiFillEdit onClick={() => setIsEditing(true)}/></td>
-            <td className="action"><AiFillDelete onClick={() => {
-                window.confirm("Are you sure you wish to delete this item?") && removeCallback(id)
-            }}/></td>
-        </tr>)
+            <td className="action"><AiFillDelete onClick={() => setIsModalVisible(true)}/></td>
+        </tr>
+        </>)
 }
 
 export default Rooms;

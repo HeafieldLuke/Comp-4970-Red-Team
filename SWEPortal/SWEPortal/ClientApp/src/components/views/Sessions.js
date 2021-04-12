@@ -3,6 +3,8 @@ import './base.css'
 import { EntryTable, ErrorMessages, FormHeader } from './Shared.js'
 import { AiFillEdit, AiFillDelete } from 'react-icons/ai';
 import apiBuilder from '../../api/api'
+import Modal from '../Modal/Modal'
+
 
 const api = apiBuilder("sessions")
 const roomApi = apiBuilder("rooms")
@@ -29,7 +31,7 @@ const Sessions = () => {
 
     const [sessionName, setSessionName] = useState([])
     const [sessionRoom, setSessionRoom] = useState([])
-    const [sessionTimeSlot, setSessionTimeSlot] = useState([])
+    const [sessionTimeSlot, setSessionTimeSlot] = useState("")
     const [sessionSpeaker, setSessionSpeaker] = useState([])
 
     const [errors, setErrors] = useState([])
@@ -41,13 +43,13 @@ const Sessions = () => {
             messages.push({ message: "Name cannot be empty" })
         }
 
-        const roomConflicts = sessions.filter(s => s.timeSlotId === session.timeSlotId && s.roomId === session.roomId)
+        const roomConflicts = sessions.filter(s => s.id !== session.id && s.timeSlotId === session.timeSlotId && s.roomId === session.roomId)
 
         if (roomConflicts.length != 0) {
             messages.push({ message: `Conflicting room, already booked for the selected time in session:  ${roomConflicts[0].name}`})
         }
 
-        const speakerConflict = sessions.filter(s => s.timeSlotId === session.timeSlotId && s.speakerId === session.speakerId)
+        const speakerConflict = sessions.filter(s => s.id !== session.id && s.timeSlotId === session.timeSlotId && s.speakerId === session.speakerId)
 
         if (speakerConflict.length != 0) {
             messages.push({ message: `Conflicting speaker, already booked for the selected time in session : ${roomConflicts[0].name}`})
@@ -85,21 +87,31 @@ const Sessions = () => {
                 fetchSessions()
                 setSessionName("")
                 setSessionRoom({})
-                setSessionTimeSlot({})
+                setSessionTimeSlot("")
                 setSessionSpeaker({})
             })
         }
         
     }
 
-    const editSession = (room) => {
-        api.update(room).then(response => {
-            fetchSessions()
-        })
+    const editSession = (session) => {
+        const messages = validateSession(session)
+
+        setErrors(messages)
+
+        if (messages.length === 0) {
+            api.update(session).then(response => {
+                fetchSessions()
+            })
+            return true;
+        }
+
+        return false
+        
     }
 
     const removeSession = (id) => {
-        api.delete(id).then(response => fetchSessions)
+        api.delete(id).then(response => fetchSessions())
     }
 
     useEffect(() => {
@@ -167,7 +179,7 @@ const SessionForm = ({ submit, sessionName, sessionRoom, sessionSpeaker, session
             </select> 
 
             <select
-                value={sessionTimeSlot.id} 
+                value={sessionTimeSlot.id ? sessionTimeSlot.id : ""} 
                 onChange={inputEvent => setSessionTimeSlot(inputEvent.target.value)}
             >
                 <option value="">Select a Time Slot</option>
@@ -179,7 +191,6 @@ const SessionForm = ({ submit, sessionName, sessionRoom, sessionSpeaker, session
                 <button onClick={() => submit({ name: sessionName, timeSlotId: sessionTimeSlot, roomId: sessionRoom, speakerId: sessionSpeaker })}>
              Submit
             </button>
-            <button>Add another</button>
           </div>
         </div>
     )
@@ -218,9 +229,13 @@ const SessionEntryTableRow = ({ id, rowData, removeCallback, submitCallback, roo
     const [room, setRoom] = useState(rooms && rooms.find(r => r.id == rowData.roomId) || {})
     const [speaker, setSpeaker] = useState(speakers && speakers.find(s => s.id == rowData.speakerId) || {})
     const [timeSlot, setTimeSlot] = useState(timeSlots && timeSlots.find(t => t.id == rowData.timeSlotId) || {})
+    const [isModalVisible, setIsModalVisible] = useState(false)
 
-    return isEditing ? 
-        (<tr>
+
+    if (isEditing) {
+        return (<>
+            <Modal isVisible={isModalVisible} setVisible={() => setIsModalVisible(false)} deleteCallback={() => removeCallback(id)} />
+            <tr>
             <td></td>
             <td><input type="text" value={name} onInput={inputEvent => setName(inputEvent.target.value)} /></td>
             <td>
@@ -228,7 +243,6 @@ const SessionEntryTableRow = ({ id, rowData, removeCallback, submitCallback, roo
                     value={room.id} 
                     onChange={inputEvent => setRoom(rooms.find(r => r.id == inputEvent.target.value))}
                 >
-                    <option value="">Select a Room</option>
                     {rooms.map(room => <option value={room.id}>{room.name}</option>)}
                 </select>
             </td>
@@ -237,7 +251,6 @@ const SessionEntryTableRow = ({ id, rowData, removeCallback, submitCallback, roo
                     value={speaker.id} 
                     onChange={inputEvent => setSpeaker(speakers.find(r => r.id == inputEvent.target.value))}
                 >   
-                    <option value="">Select a Speaker</option>
                     {speakers.map(speaker => <option value={speaker.id}>{speaker.name}</option>)}
                 </select> 
             </td>
@@ -246,23 +259,34 @@ const SessionEntryTableRow = ({ id, rowData, removeCallback, submitCallback, roo
                     value={timeSlot.id} 
                     onChange={inputEvent => setTimeSlot(timeSlots.find(ts => ts.id === inputEvent.target.value))}
                 >
-                    <option value="">Select a Time Slot</option>
                     {timeSlots.map(timeSlot => <option value={timeSlot.id}>{`${toTime(timeSlot.startTime)}-${toTime(timeSlot.endTime)}`}</option>)}
                 </select>
             </td>
             <td>
                 <button onClick={() => {
-                    submitCallback({ id: id, name: name, timeSlotId: timeSlot.id, roomId: room.id, speakerId: speaker.id })
-                    setIsEditing(false) 
+                    const success = submitCallback({ id: id, name: name, timeSlotId: timeSlot.id, roomId: room.id, speakerId: speaker.id })
+                    if (success) {
+                        setIsEditing(false) 
+                    }
                     }}
                 >Save</button>
-                <button onClick={() => setIsEditing(false)}>Cancel</button>
+                <button onClick={() => {
+                    setName(rowData.name)
+                    setRoom(rooms && rooms.find(r => r.id == rowData.roomId) || {})
+                    setSpeaker(speakers && speakers.find(s => s.id == rowData.speakerId) || {})
+                    setTimeSlot(timeSlots && timeSlots.find(t => t.id == rowData.timeSlotId) || {})
+                    setIsEditing(false)
+                }}>Cancel</button>
             </td>
             <td className="action"><AiFillEdit /></td>
-            <td className="action"><AiFillDelete onClick={() => removeCallback(id)}/></td>
+            <td className="action"><AiFillDelete onClick={() => setIsModalVisible(true)}/></td>
           </tr>
-        ) :
-        (<tr>
+        </>)
+    }
+        
+     return (<>
+        <Modal isVisible={isModalVisible} setVisible={() => setIsModalVisible(false)} deleteCallback={() => removeCallback(id)} />
+        <tr>
             <td></td>
             <td>{name}</td>
             <td>{room.name}</td>
@@ -270,8 +294,9 @@ const SessionEntryTableRow = ({ id, rowData, removeCallback, submitCallback, roo
             <td>{`${toTime(timeSlot.startTime)}-${toTime(timeSlot.endTime)}`}</td>
             <td></td>
             <td className="action"><AiFillEdit onClick={() => setIsEditing(true)}/></td>
-            <td className="action"><AiFillDelete onClick={() => removeCallback(id)}/></td>
-        </tr>)
+            <td className="action"><AiFillDelete onClick={() => setIsModalVisible(true)}/></td>
+        </tr>
+    </>)
 }
 
 export default Sessions 

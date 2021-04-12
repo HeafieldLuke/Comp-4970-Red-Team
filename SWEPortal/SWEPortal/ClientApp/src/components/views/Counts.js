@@ -12,6 +12,7 @@ const format = {
     minute: 'numeric',
 }
 
+
 const validateCount = ({ count }) => {
     const messages = []
 
@@ -54,7 +55,6 @@ const Counts = () => {
         const messages = validateCount(session)
 
         setErrors(messages)
-        console.log(session)
         if (messages.length === 0) {
             api.create(session).then(response => {
                 fetchCountsForSession(selectedSession)
@@ -64,9 +64,19 @@ const Counts = () => {
     }
 
     const editCountsForSession = (count) => {
-        api.update(count).then(response => {
-            fetchCountsForSession(selectedSession)
-        })
+        const messages = validateCount(count)
+
+        setErrors(messages)
+        if (messages.length === 0) {
+            api.update(count).then(response => {
+                fetchCountsForSession(selectedSession)
+            })
+
+            return true
+        }
+
+        return false
+        
     }
 
     useEffect(() => {
@@ -75,6 +85,7 @@ const Counts = () => {
 
     return (
         <div className="container">
+            <ErrorMessages errors={errors} />
             <FormHeader name="Counts" />
             <select 
                 className="count-select" 
@@ -145,11 +156,16 @@ const CountEntryTableRow = ({ id, rowData, index, submitCallback }) => {
             <td><input type="text" value={count} onInput={inputEvent => setCount(inputEvent.target.value)} /></td>
             <td>
                 <button onClick={() => {
-                    submitCallback({id: id, type: rowData.type, count: count, sessionId: rowData.sessionId })
-                    setIsEditing(false) 
+                    const success = submitCallback({id: id, type: rowData.type, count: count, sessionId: rowData.sessionId })
+                    if (success) {
+                        setIsEditing(false) 
+                    }
                     }}
                 >Save</button>
-                <button onClick={() => setIsEditing(false)}>Cancel</button>
+                <button onClick={() => {
+                    setCount(rowData.count)
+                    setIsEditing(false)}
+                }>Cancel</button>
             </td>
             <td className="action"><AiFillEdit /></td>
           </tr>

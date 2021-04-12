@@ -3,6 +3,7 @@ import './base.css'
 import { EntryTable, ErrorMessages, FormHeader } from './Shared.js'
 import { AiFillEdit, AiFillDelete } from 'react-icons/ai';
 import apiBuilder from '../../api/api'
+import Modal from '../Modal/Modal'
 
 const api = apiBuilder("timeslots")
 
@@ -83,16 +84,25 @@ const TimeSlots = () => {
             const stringTimes = { startTime: toJsonString(timeSlot.startTime), endTime: toJsonString(timeSlot.endTime)}
             api.create(stringTimes).then(response => {
                 fetchTimeSlots()
-                setStartTime("")
-                setEndTime("")
+                setStartTime({})
+                setEndTime({})
             })
         }
     }
 
-    const editTimeSlot = (timeSlots) => {
-        api.update(timeSlots).then(response => {
-            fetchTimeSlots()
-        })
+    const editTimeSlot = (timeSlot) => {
+        const messages = validateTimeSlots(timeSlot)
+
+        setErrors(messages)
+        if (messages.length === 0) {
+            api.update(timeSlot).then(response => {
+                fetchTimeSlots()
+            })
+            return true
+        }
+        return false
+
+        
     }
 
     const removeTimeSlot = (id) => {
@@ -131,14 +141,14 @@ const TimeSlotForm = ({ submit, setStartTime, setEndTime, startTime, endTime }) 
         <div>
           <form> 
             <select
-                value={startTime.value} 
+                value={Object.keys(startTime).length !== 0 ? startTime.value : ""} 
                 onChange={event => setStartTime(event.target.value)}
             >
                 <option value="">Start Time</option>
                 {getTimeRange(30).map(time => <option key={time.label} value={time.value}>{time.label}</option>)}
             </select>
             <select
-                value={endTime.value} 
+                value={Object.keys(endTime).length !== 0 ? endTime.value : ""} 
                 onChange={inputEvent => setEndTime(inputEvent.target.value)}
             >
                 <option value="">End Time</option>
@@ -149,7 +159,6 @@ const TimeSlotForm = ({ submit, setStartTime, setEndTime, startTime, endTime }) 
                 <button onClick={() => submit({ startTime: startTime, endTime: endTime })}>
              Submit
             </button>
-            <button>Add another</button>
           </div>
         </div>
     )
@@ -177,9 +186,12 @@ const TimeSlotEntryTableRow = ({ id, rowData, removeCallback, submitCallback }) 
     const [isEditing, setIsEditing] = useState(false)
     const [start, setStart] = useState(range.find(r => r.label === toTime(rowData.startTime)))
     const [end, setEnd] = useState(range.find(r => r.label == toTime(rowData.endTime)))
+    const [isModalVisible, setIsModalVisible] = useState(false)
     
-    return isEditing ? 
-        (<tr>
+    if (isEditing) {
+        return (<>
+            <Modal isVisible={isModalVisible} setVisible={() => setIsModalVisible(false)} deleteCallback={() => removeCallback(id)} />
+            <tr>
             <td></td>
             <td>
                 <select
@@ -199,24 +211,35 @@ const TimeSlotEntryTableRow = ({ id, rowData, removeCallback, submitCallback }) 
             </td>
             <td>
                 <button onClick={() => {
-                    submitCallback({id: id, startTime: toJsonString(start.value), endTime: toJsonString(end.value)})
-                    setIsEditing(false) 
+                    const success = submitCallback({id: id, startTime: toJsonString(start.value), endTime: toJsonString(end.value)})
+                    if (success) {
+                        setIsEditing(false) 
+                    }
                     }}
                 >Save</button>
-                <button onClick={() => setIsEditing(false)}>Cancel</button>
+                <button onClick={() => {
+                    setStart(range.find(r => r.label === toTime(rowData.startTime)))
+                    setEnd(range.find(r => r.label == toTime(rowData.endTime)))
+                    setIsEditing(false)}
+                }>Cancel</button>
             </td>
             <td className="action"><AiFillEdit /></td>
-            <td className="action"><AiFillDelete onClick={() => removeCallback(id)}/></td>
+            <td className="action"><AiFillDelete onClick={() => setIsModalVisible(true)}/></td>
           </tr>
-        ) :
-        (<tr>
+          </>)
+    }
+
+    return (<>
+        <Modal isVisible={isModalVisible} setVisible={() => setIsModalVisible(false)} deleteCallback={() => removeCallback(id)} />
+        <tr>
             <td></td>
             <td>{start.label}</td>
             <td>{end.label}</td>
             <td></td>
             <td className="action"><AiFillEdit onClick={() => setIsEditing(true)}/></td>
-            <td className="action"><AiFillDelete onClick={() => removeCallback(id)}/></td>
-        </tr>)
+            <td className="action"><AiFillDelete onClick={() => setIsModalVisible(true)}/></td>
+        </tr>
+        </>)
 }
 
 export default TimeSlots
