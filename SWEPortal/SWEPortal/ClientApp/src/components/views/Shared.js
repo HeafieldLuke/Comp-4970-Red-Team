@@ -1,5 +1,7 @@
 import './base.css'
+import { useState } from 'react'
 import { AiFillEdit, AiFillDelete } from 'react-icons/ai';
+import api from '../../api/api'
 
 const FormHeader = ({ name }) => (
     <div>
@@ -8,27 +10,10 @@ const FormHeader = ({ name }) => (
     </div>
 )
 
-const EntryTable = ({ headers, rows }) => (
-    <table>
-        <tr>
-            <th className="initial-spacing"></th>
-            {headers.map(headerName => <th className="row">{headerName}</th>)}
-            <th></th>
-            <th className="action">Edit</th>
-            <th className="action">Delete</th>
-        </tr>
-        {rows.map(row => <EntryTableRow rowData={Object.values(row)} />)}
-    </table>
+const ErrorMessages = ({ errors }) => (
+    <div className="error-parent">
+        {errors.map(error => <div key={error.message} className="error">{error.message}</div>)}
+    </div>
 )
 
-const EntryTableRow = ({ rowData }) => (
-    <tr>
-        <td></td>
-        {rowData.map(value => <td>{value}</td>)}
-        <td></td>
-        <td className="action"><AiFillEdit /></td>
-        <td className="action"><AiFillDelete /></td>
-    </tr>
-)
-
-export { EntryTable, FormHeader };
+export { FormHeader, ErrorMessages };

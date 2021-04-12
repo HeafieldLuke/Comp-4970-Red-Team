@@ -13,6 +13,7 @@ using SWEBackend.Controllers.Sessions;
 using SWEBackend.Controllers.Speakers;
 using SWEBackend.Controllers.TimeSlots;
 using SWEBackend.Controllers.Venues;
+using SWEBackend.Controllers.SessionCounts;
 
 namespace SWEBackend
 {
@@ -43,6 +44,7 @@ namespace SWEBackend
             services.AddScoped<ISessionsController, SessionsController>();
             services.AddScoped<ISpeakersController, SpeakersController>();
             services.AddScoped<ITimeSlotsController, TimeSlotsController>();
+            services.AddScoped<ISessionCountsController, SessionCountsController>();
             services.AddScoped<IVenuesController, VenuesController>();
         }
 

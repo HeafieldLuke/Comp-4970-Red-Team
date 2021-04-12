@@ -3,6 +3,7 @@ import Rooms from './components/views/Rooms'
 import Speakers from './components/views/Speakers'
 import TimeSlots from './components/views/TimeSlots'
 import Sessions from './components/views/Sessions'
+import Counts from './components/views/Counts'
 import './App.css';
 import {
   BrowserRouter as Router,
@@ -25,8 +26,11 @@ function App() {
         <Route path="/time-slots">
           <TimeSlots />
         </Route>
-        <Router>
-          <Sessions path="/sessions" />
+        <Router path="/sessions">
+          <Sessions />
+        </Router>
+        <Router path="/counts">
+          <Counts />
         </Router>
       </Switch>
     </Router>

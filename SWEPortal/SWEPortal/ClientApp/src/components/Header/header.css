@@ -1,4 +1,4 @@
-ul {
+ ul.header {
     list-style-type: none;
     margin: 0;
     padding: 0;
@@ -6,11 +6,11 @@ ul {
     background-color: #00022e;
   }
   
-  li {
+  ul.header > li {
     float: left;
   }
   
-  li a {
+  ul.header > li a {
     display: block;
     color: white;
     text-align: center;
@@ -18,7 +18,7 @@ ul {
     text-decoration: none;
   }
   
-  li a:hover {
+  ul.header > li a:hover {
     background-color: #458FFF;
     cursor: pointer;
   }
